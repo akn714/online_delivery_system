@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Delivery System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --error: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 1.75rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--gray-500);
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+            color: var(--gray-700);
+            border-bottom: 2px solid var(--gray-100);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.375rem;
+            color: var(--gray-700);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Items Section */
+        .category {
+            margin-bottom: 1.5rem;
+        }
+
+        .category-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .item-card {
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .item-card:hover {
+            border-color: var(--gray-300);
+        }
+
+        .item-card.selected {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .item-name {
+            font-weight: 500;
+            font-size: 0.875rem;
+            flex: 1;
+        }
+
+        .item-price {
+            font-size: 0.8125rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .item-unit {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .quantity-input {
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .item-card.selected .quantity-input {
+            display: block;
+        }
+
+        .quantity-input input {
+            width: 80px;
+            padding: 0.375rem 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .quantity-input label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-right: 0.375rem;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.9375rem;
+        }
+
+        .summary-row.total {
+            border-top: 2px solid var(--gray-200);
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        .submit-btn:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+        }
+
+        .submit-btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .submit-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Messages */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9375rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--error);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Empty State */
+        .empty-items {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-500);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 Online Delivery System</h1>
+            <p>Place your order for Stationary, Grocery & Fruits</p>
+        </header>
+
+        <form id="orderForm">
+            <!-- Customer Details -->
+            <div class="card">
+                <h2>📋 Customer Details</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" required 
+                               placeholder="Enter your name" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number *</label>
+                        <input type="tel" id="phone" name="phone" required 
+                               placeholder="Enter phone number" minlength="5" maxlength="20">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="address">Delivery Address *</label>
+                    <select id="address" name="address" required>
+                        <option value="">Select Hostel</option>
+                        <option value="BH1">BH1 (Boys Hostel 1)</option>
+                        <option value="BH2">BH2 (Boys Hostel 2)</option>
+                        <option value="BH3">BH3 (Boys Hostel 3)</option>
+                        <option value="GH1">GH1 (Girls Hostel)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Items Section -->
+            <div class="card">
+                <h2>🛍️ Select Items</h2>
+                <div id="itemsContainer"></div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="card">
+                <h2>📝 Order Summary</h2>
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">₹0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery Charges</span>
+                        <span id="deliveryCharge">₹15</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="totalPrice">₹15</span>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Place Order
+            </button>
+        </form>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Items Catalog
+        const itemsCatalog = {
+            "Grocery": [
+                {"name": "White Bread", "price": 20, "unit": "piece"},
+                {"name": "Bhuja Chana", "price": 100, "unit": "kg"},
+                {"name": "Maggie", "price": [15, 56], "unit": "packet"},
+                {"name": "Moongfali", "price": 160, "unit": "kg"},
+                {"name": "Soyabean (Packet)", "price": 10, "unit": "packet"},
+                {"name": "Soyabean (Open - Small)", "price": 100, "unit": "kg"},
+                {"name": "Macaroni / Pasta", "price": 60, "unit": "kg"},
+                {"name": "Sugar (Chini)", "price": 45, "unit": "kg"},
+                {"name": "Glucose D", "price": [56, 89], "unit": "packet"},
+                {"name": "Jam (Kissan Mixed Fruit)", "price": [25, 90], "unit": "bottle"},
+                {"name": "Colgate Toothpaste", "price": [20, 70, 130], "unit": "piece"},
+                {"name": "Closeup Toothpaste", "price": [20, 55], "unit": "piece"},
+                {"name": "Sensodyne Toothpaste", "price": 140, "unit": "piece"},
+                {"name": "Coffee (Nescafe)", "price": [10, 124, 235], "unit": "packet"},
+                {"name": "Mustard Oil (Sarso Tel)", "price": 180, "unit": "liter"},
+                {"name": "Fortune Oil", "price": 190, "unit": "liter"},
+                {"name": "Garam Masala (Whole)", "price": 20, "unit": "packet"},
+                {"name": "Garam Masala (Packet)", "price": 10, "unit": "packet"},
+                {"name": "Kacha Chana", "price": 80, "unit": "kg"},
+                {"name": "Makhana", "price": 130, "unit": "100 gm"},
+                {"name": "Kaju (Cashew)", "price": 1000, "unit": "kg"},
+                {"name": "Badam (Almond)", "price": 1000, "unit": "kg"},
+                {"name": "Pista (Packet)", "price": 350, "unit": "packet"},
+            ],
+            "Stationary": [
+                {"name": "Practical File (Physics)", "price": [30, 60], "unit": "piece"},
+                {"name": "Practical File (Chemistry)", "price": [30, 60], "unit": "piece"},
+                {"name": "Practical File (General)", "price": [30, 60], "unit": "piece"},
+                {"name": "Pen", "price": [4, 5, 10], "unit": "piece"},
+                {"name": "Pencil", "price": 5, "unit": "piece"},
+                {"name": "Eraser", "price": 5, "unit": "piece"},
+                {"name": "Sharpener", "price": 5, "unit": "piece"},
+                {"name": "Drawing Book A3 (36 pages)", "price": 90, "unit": "piece"},
+                {"name": "Drawing Book A3 (56 pages)", "price": 110, "unit": "piece"},
+                {"name": "A4 Size Pages (500 sheets)", "price": 200, "unit": "pack"},
+                {"name": "Stapler", "price": 50, "unit": "piece"},
+                {"name": "Staple Pins", "price": 10, "unit": "box"},
+                {"name": "Sticky Notes", "price": 20, "unit": "pack"},
+                {"name": "Fevicol", "price": [10, 20, 50], "unit": "bottle"},
+                {"name": "Double-Sided Tape", "price": [5, 10], "unit": "roll"},
+                {"name": "Spiral Notebook (Plain)", "price": [80, 100, 140], "unit": "piece"},
+                {"name": "Spiral Notebook (Lined)", "price": [80, 100, 140], "unit": "piece"},
+                {"name": "Register (A4 Rough)", "price": [30, 40, 50], "unit": "piece"},
+                {"name": "Register (A2)", "price": [30, 40, 50], "unit": "piece"},
+                {"name": "Register (A1)", "price": [30, 40, 50], "unit": "piece"},
+                {"name": "Graph Book", "price": 10, "unit": "piece"},
+                {"name": "Cello Tape", "price": 5, "unit": "roll"},
+                {"name": "Practical File Pages (Lined)", "price": 10, "unit": "pack"},
+                {"name": "Practical File Pages (Plain)", "price": 10, "unit": "pack"},
+                {"name": "Practical File Cover (Plastic)", "price": [5, 10], "unit": "piece"},
+                {"name": "Practical File Cover (Cardboard)", "price": 20, "unit": "piece"},
+                {"name": "Highlighter", "price": 20, "unit": "piece"},
+            ],
+            "Fruits": [
+                {"name": "Banana", "price": 40, "unit": "kg"},
+                {"name": "Pomegranate (Anaar)", "price": 180, "unit": "kg"},
+                {"name": "Mango", "price": 100, "unit": "kg"},
+                {"name": "Apple", "price": 200, "unit": "kg"},
+                {"name": "Orange (Santara)", "price": 150, "unit": "kg"},
+                {"name": "Papaya (Papita)", "price": 60, "unit": "kg"},
+                {"name": "Kiwi", "price": 50, "unit": "piece"},
+                {"name": "Coconut (Nariyal)", "price": 70, "unit": "piece"},
+                {"name": "Grapes (Angoor)", "price": 150, "unit": "kg"},
+            ],
+        };
+
+        const DELIVERY_CHARGE = 15;
+        let selectedItems = {};
+
+        // Format price for display
+        function formatPrice(price) {
+            if (Array.isArray(price)) {
+                return `₹${price.join(', ₹')}`;
+            }
+            return `₹${price}`;
+        }
+
+        // Get first price for calculation
+        function getFirstPrice(price) {
+            if (Array.isArray(price)) {
+                return price[0];
+            }
+            return price;
+        }
+
+        // Render items
+        function renderItems() {
+            const container = document.getElementById('itemsContainer');
+            let html = '';
+
+            for (const [category, items] of Object.entries(itemsCatalog)) {
+                html += `<div class="category">
+                    <div class="category-title">${category}</div>
+                    <div class="items-grid">`;
+
+                items.forEach(item => {
+                    const itemId = btoa(item.name).replace(/[^a-zA-Z0-9]/g, '').substring(0, 10);
+                    html += `<div class="item-card" data-item="${item.name}" onclick="toggleItem('${item.name}')">
+                        <div class="item-header">
+                            <input type="checkbox" class="item-checkbox" 
+                                   id="cb_${itemId}" onchange="event.stopPropagation()">
+                            <span class="item-name">${item.name}</span>
+                            <span class="item-price">${formatPrice(item.price)}</span>
+                        </div>
+                        <div class="item-unit">per ${item.unit}</div>
+                        <div class="quantity-input">
+                            <label>Qty:</label>
+                            <input type="number" min="1" value="1" 
+                                   id="qty_${itemId}"
+                                   onchange="updateQuantity('${item.name}', this.value)"
+                                   onclick="event.stopPropagation()">
+                        </div>
+                    </div>`;
+                });
+
+                html += `</div></div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Toggle item selection
+        function toggleItem(itemName) {
+            const item = findItem(itemName);
+            if (!item) return;
+
+            const itemId = btoa(itemName).replace(/[^a-zA-Z0-9]/g, '').substring(0, 10);
+            const card = document.querySelector(`[data-item="${itemName}"]`);
+            const checkbox = document.getElementById(`cb_${itemId}`);
+            const qtyInput = document.getElementById(`qty_${itemId}`);
+
+            if (card.classList.contains('selected')) {
+                card.classList.remove('selected');
+                checkbox.checked = false;
+                delete selectedItems[itemName];
+            } else {
+                card.classList.add('selected');
+                checkbox.checked = true;
+                const qty = parseInt(qtyInput.value) || 1;
+                selectedItems[itemName] = {
+                    name: itemName,
+                    quantity: qty,
+                    price: getFirstPrice(item.price),
+                    unit: item.unit
+                };
+            }
+
+            updateSummary();
+        }
+
+        // Update quantity
+        function updateQuantity(itemName, value) {
+            const qty = parseInt(value) || 1;
+            if (selectedItems[itemName]) {
+                selectedItems[itemName].quantity = qty;
+            }
+            updateSummary();
+        }
+
+        // Find item in catalog
+        function findItem(itemName) {
+            for (const items of Object.values(itemsCatalog)) {
+                const item = items.find(i => i.name === itemName);
+                if (item) return item;
+            }
+            return null;
+        }
+
+        // Update order summary
+        function updateSummary() {
+            let subtotal = 0;
+            for (const item of Object.values(selectedItems)) {
+                subtotal += item.price * item.quantity;
+            }
+            const total = subtotal + DELIVERY_CHARGE;
+
+            document.getElementById('subtotal').textContent = `₹${subtotal}`;
+            document.getElementById('deliveryCharge').textContent = `₹${DELIVERY_CHARGE}`;
+            document.getElementById('totalPrice').textContent = `₹${total}`;
+        }
+
+        // Show toast message
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        // Validate form
+        function validateForm() {
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value;
+
+            if (!name) {
+                showToast('Please enter your name', 'error');
+                return false;
+            }
+            if (!phone || phone.length < 5) {
+                showToast('Please enter a valid phone number', 'error');
+                return false;
+            }
+            if (!address) {
+                showToast('Please select a delivery address', 'error');
+                return false;
+            }
+            if (Object.keys(selectedItems).length === 0) {
+                showToast('Please select at least one item', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Submit order
+        async function submitOrder(e) {
+            e.preventDefault();
+
+            if (!validateForm()) return;
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            const orderData = {
+                name: document.getElementById('name').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                address: document.getElementById('address').value,
+                items: Object.values(selectedItems).map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                }))
+            };
+
+            try {
+                const response = await fetch('http://localhost:8000/api/create-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showToast(`Order placed! ID: ${result.order_id}`, 'success');
+                    document.getElementById('orderForm').reset();
+                    selectedItems = {};
+                    renderItems();
+                    updateSummary();
+                } else {
+                    throw new Error(result.detail || 'Failed to place order');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Failed to place order. Make sure backend is running.', 'error');
+            } finally {
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderItems();
+            document.getElementById('orderForm').addEventListener('submit', submitOrder);
+        });
+    </script>
+</body>
+</html>
