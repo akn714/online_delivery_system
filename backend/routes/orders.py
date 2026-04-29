@@ -4,12 +4,12 @@ import uuid
 import os
 from dotenv import load_dotenv
 
-from backend.models.order import (
+from models.order import (
     CreateOrderRequest, 
     CreateOrderResponse,
     OrderItemResponse
 )
-from backend.services.telegram import send_order_to_telegram, format_telegram_message
+from services.telegram import send_order_to_telegram, format_telegram_message
 
 load_dotenv()
 
