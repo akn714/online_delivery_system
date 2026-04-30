@@ -24,7 +24,10 @@ async def send_order_to_telegram(order_id: str, name: str, address: str, phone: 
 
 Here are your order details:
 
+- Name: {name}
 - Order ID: {order_id}
+- Phone No: {phone}
+- Delivery Address: {address}
 - Delivery Charges: ₹{delivery_charge}
 - Total Price: ₹{total_price}
 
