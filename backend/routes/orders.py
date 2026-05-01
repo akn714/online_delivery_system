@@ -36,7 +36,7 @@ def generate_otp() -> str:
 def generate_order_id() -> str:
     """Generate a unique order ID."""
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    return f"ORD#{timestamp}-{uuid.uuid4().hex[:4].upper()}"
+    return f"ORD{timestamp}-{uuid.uuid4().hex[:4].upper()}"
 
 
 @router.post("/orders", response_model=CreateOrderResponse)
@@ -248,10 +248,22 @@ async def handle_telegram_callback(request: Request):
             .execute()
         )
 
-        if not update_result.data:
+        # Some Supabase Python client versions don't return updated rows unless
+        # specifically configured, so verify with a follow-up select.
+        verify_after = supabase.table("orders").select("id,status").eq("id", order_id).execute()
+        updated_rows = verify_after.data or []
+        if not updated_rows or updated_rows[0].get("status") != "confirmed":
+            # Verify current status to detect RLS/policy blocks clearly.
+            current_after = verify_after.data[0].get("status") if verify_after.data else None
+            error_hint = (
+                "Update blocked (likely Supabase RLS policy). "
+                "Allow UPDATE on orders or use SUPABASE_SERVICE_ROLE_KEY."
+                if current_after != "confirmed"
+                else "Order update did not return rows."
+            )
             if callback_query_id:
-                await answer_callback_query(callback_query_id, "Failed to confirm order.")
-            return {"ok": True, "message": "Supabase update failed"}
+                await answer_callback_query(callback_query_id, f"Failed to confirm: {error_hint}")
+            return {"ok": False, "message": error_hint, "order_id": order_id}
 
         if callback_query_id:
             await answer_callback_query(callback_query_id, f"Order {order_id} confirmed.")
@@ -260,7 +272,49 @@ async def handle_telegram_callback(request: Request):
 
         return {"ok": True, "message": f"Order {order_id} confirmed"}
     except Exception as exc:
+        print(exc)
         return {"ok": False, "error": str(exc)}
+
+
+@router.get("/telegram/debug-update")
+async def telegram_debug_update(order_id: str):
+    """
+    Debug endpoint to validate whether backend can update order status.
+    Does a no-op style write by setting status to its current value.
+    """
+    try:
+        supabase = get_supabase()
+        using_service_role_key = bool(os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
+
+        print(order_id)
+        current = supabase.table("orders").select("id,status").eq("id", order_id).execute()
+        if not current.data:
+            return {
+                "ok": False,
+                "message": "Order not found",
+                "order_id": order_id,
+                "using_service_role_key": using_service_role_key,
+            }
+
+        current_status = current.data[0].get("status", "pending")
+        write_result = (
+            supabase.table("orders")
+            .update({"status": 'confirmed'})
+            .eq("id", order_id)
+            .execute()
+        )
+
+        post_check = supabase.table("orders").select("id,status").eq("id", order_id).execute()
+        return {
+            "ok": True,
+            "order_id": order_id,
+            "current_status_before": current_status,
+            "current_status_after": (post_check.data[0].get("status") if post_check.data else None),
+            "using_service_role_key": using_service_role_key,
+            "update_response_data_length": len(write_result.data or []),
+        }
+    except Exception as exc:
+        return {"ok": False, "order_id": order_id, "error": str(exc)}
 
 
 @router.get("/telegram/webhook-info")

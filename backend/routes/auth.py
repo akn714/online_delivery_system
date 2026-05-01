@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
 def generate_user_id() -> str:
     """Generate a unique user ID."""
-    return f"USR#{uuid.uuid4().hex[:8].upper()}"
+    return f"USR{uuid.uuid4().hex[:8].upper()}"
 
 
 def _prepare_password(password: str) -> bytes:

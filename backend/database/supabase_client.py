@@ -7,7 +7,8 @@ load_dotenv()
 
 # Get Supabase credentials
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Prefer service-role key for backend operations (bypasses restrictive RLS).
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
 
 # Create client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None

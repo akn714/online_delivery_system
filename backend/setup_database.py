@@ -50,6 +50,7 @@ CREATE POLICY "Enable read access for all users" ON users FOR SELECT USING (true
 CREATE POLICY "Enable insert access for all users" ON users FOR INSERT WITH CHECK (true);
 CREATE POLICY "Enable read access for all orders" ON orders FOR SELECT USING (true);
 CREATE POLICY "Enable insert access for all orders" ON orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Enable update access for all orders" ON orders FOR UPDATE USING (true) WITH CHECK (true);
 
 -- Create index on user_id for faster order lookups
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
