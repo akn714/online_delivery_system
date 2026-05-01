@@ -13,6 +13,125 @@ interface SelectedItem {
   unit: string;
 }
 
+const ITEM_IMAGE_MAP: Record<string, string> = {
+  'White Bread': 'white_bread_metro_gold.png',
+  'Bhuja Chana': 'roasted_chana_250gm.jpg',
+  'Maggie (Small - 75g)': 'maggie_small_packet.jpg',
+  'Maggie (Family Pack - 400g)': 'maggie_family_pack.jpg',
+  'Moongfali': 'moongfali_peanut_250gm.jpg',
+  'Soyabean (Packet)': 'soyachunks_fortune_packet.jpg',
+  'Soyabean (Open - Small)': 'soyabean_chunks_open_250gm.jpeg',
+  'Macaroni / Pasta': 'fusli_pasta_microni_250gm.jpeg',
+  'Sugar (Chini)': 'suger_chini_250gm.jpg',
+  'Glucose D (200g)': 'glucose_d_small.jpg',
+  'Glucose D (400g)': 'glucose_d_large.jpeg',
+  'Jam (Small)': 'kissan_mixed_fruit_jam_small.jpeg',
+  'Jam (Big)': 'kissan_mixed_fruit_jam_large.jpeg',
+  'Colgate (Small)': 'colgate_toothpaste_small.jpg',
+  'Colgate (Medium)': 'colgate_toothpaste_large.webp',
+  'Colgate (Big)': 'colgate_toothpaste_large.webp',
+  'Closeup (Small)': 'close_up_toothpaste.jpg',
+  'Closeup (Big)': 'close_up_toothpaste.jpg',
+  'Sensodyne Toothpaste': 'sensodine_toothpaste.jpeg',
+  'Coffee (Nescafe - 50g)': 'nescafe_coffee_small_packet.webp',
+  'Coffee (Nescafe - 100g)': 'nescafe_coffee_medium.jpg',
+  'Coffee (Nescafe - 200g)': 'nescafe_coffee_large.jpeg',
+  'Mustard Oil (Sarso Tel)': 'sarso_tel_sudhh_ghani_1kg.jpg',
+  'Fortune Oil': 'sarso_tel_fortune_1kg.jpg',
+  'Garam Masala (Whole)': 'khada_garam_masala_packet.jpeg',
+  'Garam Masala (Packet)': 'khada_garam_masala_packet.jpeg',
+  'Kacha Chana': 'kacha_chana_250gm.jpg',
+  'Makhana': 'makhana_100gm.jpeg',
+  'Kaju (Cashew)': 'kaju_100gm.jpg',
+  'Badam (Almond)': 'badam_100gm.jpg',
+  'Practical File (Physics - 30 Pages)': 'practical_file_physics.jpg',
+  'Practical File (Physics - 60 Pages)': 'practical_file_physics.jpg',
+  'Practical File (Chemistry - 30 Pages)': 'practical_file_chemistry.jpg',
+  'Practical File (Chemistry - 60 Pages)': 'practical_file_chemistry.jpg',
+  'Practical File (General - 30 Pages)': 'practical_file_general.jpeg',
+  'Practical File (General - 60 Pages)': 'practical_file_general.jpeg',
+  'Pen (Cheap)': 'pen_blue.jpg',
+  'Pen (Medium)': 'pen_blue.jpg',
+  'Pen (Good)': 'pen_blue.jpg',
+  'Pencil': 'natraj_pencil.png',
+  'Eraser': 'eraser_apsara.jpg',
+  'Sharpener': 'pencil_sharpner_plastic.jpg',
+  'A4 Size Pages (500 sheets)': 'a4_size_paper_500pages.jpg',
+  'Stapler': 'stapler.jpg',
+  'Staple Pins': 'staples_pin_box.jpeg',
+  'Sticky Notes': 'sticky_notes_small_packet.jpeg',
+  'Fevicol (Small)': 'fevicol_small.jpg',
+  'Fevicol (Medium)': 'fevicol_small.jpg',
+  'Fevicol (Big)': 'fevicol_small.jpg',
+  'Double-Sided Tape (Small)': 'cello_tape_small.jpeg',
+  'Double-Sided Tape (Big)': 'cello_tape_small.jpeg',
+  'Spiral Notebook (Plain - 100 Pages)': 'spiral_notebook_100pg.jpg',
+  'Spiral Notebook (Plain - 200 Pages)': 'spiral_notebook_200pg.jpeg',
+  'Spiral Notebook (Lined - 100 Pages)': 'spiral_notebook_100pg.jpg',
+  'Register (A4 Rough - 100 Pages)': 'register_a4_rough.jpg',
+  'Register (A4 Rough - 200 Pages)': 'register_a4_rough_a4.jpg',
+  'Graph Book': 'graph_book.jpg',
+  'Cello Tape': 'cello_tape_small.jpeg',
+  'Highlighter': 'highlighter.jpeg',
+  'Banana': 'banana.jpg',
+  'Pomegranate (Anaar)': 'pomegranate_anar_500gm.jpg',
+  'Mango': 'mango_aam_500gm.jpg',
+  'Apple': 'apple.jpg',
+  'Orange (Santara)': 'orange_santara_500gm.jpg',
+  'Papaya (Papita)': 'fresh_papaya_1kg.jpg',
+  'Kiwi': 'kiwi.jpg',
+  'Coconut (Nariyal)': 'nariyal_water.webp',
+  'Grapes (Angoor)': 'fresh_angoor_250gm.jpg',
+};
+
+const buildImagePath = (fileName: string) => `/Item%20Images/${encodeURIComponent(fileName)}`;
+
+const toSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+function ItemImage({ itemName }: { itemName: string }) {
+  const mapped = ITEM_IMAGE_MAP[itemName];
+  const slug = toSlug(itemName);
+  const candidates = [
+    mapped,
+    `${slug}.jpg`,
+    `${slug}.jpeg`,
+    `${slug}.png`,
+    `${slug}.webp`,
+  ].filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index);
+
+  const [candidateIndex, setCandidateIndex] = useState(0);
+  const [failed, setFailed] = useState(candidates.length === 0);
+
+  if (failed) {
+    return (
+      <div className="w-14 h-14 rounded-md bg-gray-100 flex items-center justify-center text-xl">
+        🛍️
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={buildImagePath(candidates[candidateIndex])}
+      alt={itemName}
+      className="w-14 h-14 rounded-md object-cover border border-gray-200 bg-white"
+      loading="lazy"
+      onError={() => {
+        if (candidateIndex < candidates.length - 1) {
+          setCandidateIndex((prev) => prev + 1);
+          return;
+        }
+        setFailed(true);
+      }}
+    />
+  );
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -137,7 +256,8 @@ export default function HomePage() {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
+                      <ItemImage itemName={item.name} />
                       <input
                         type="checkbox"
                         checked={isSelected}

@@ -96,7 +96,7 @@ export default function PaymentPage() {
 
       <div className="bg-gray-50 rounded-lg p-4 mb-6">
         <p className="text-gray-700">Pay using UPI to:</p>
-        <p className="font-semibold text-primary-700 mt-1">rocket07@upi</p>
+        <p className="font-semibold text-primary-700 mt-1">9919262161@ybl</p>
         <p className="text-lg font-bold mt-3">Total Amount: ₹{totalAmount}</p>
       </div>
 
