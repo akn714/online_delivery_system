@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request
 from datetime import datetime
 import uuid
 import os
@@ -11,7 +11,14 @@ from models.order import (
     OrderItemResponse,
     OrderListResponse
 )
-from services.telegram import send_order_to_telegram, format_telegram_message
+from services.telegram import (
+    send_order_to_telegram,
+    format_telegram_message,
+    answer_callback_query,
+    get_webhook_info,
+    ensure_webhook_configured,
+    update_message_confirmation_status,
+)
 from database.supabase_client import get_supabase
 
 load_dotenv()
@@ -142,7 +149,6 @@ async def get_orders(user_id: str = None, authorization: str = Header(None)):
     """
     Get orders for a specific user.
     """
-    print(user_id)
     supabase = get_supabase()
     
     query = supabase.table("orders").select("*")
@@ -185,6 +191,90 @@ async def get_orders(user_id: str = None, authorization: str = Header(None)):
         orders=orders,
         total=len(orders)
     )
+
+
+@router.post("/telegram/callback")
+async def handle_telegram_callback(request: Request):
+    """
+    Handle Telegram callback queries for order actions.
+
+    Expected callback_data format: confirm_order:<order_id>
+    """
+    print('[+] telegram callback')
+    try:
+        payload = await request.json()
+        callback_query = payload.get("callback_query")
+        print(callback_query)
+
+
+        if not callback_query:
+            return {"ok": True, "message": "No callback_query in payload"}
+
+        callback_data = callback_query.get("data", "")
+        callback_query_id = callback_query.get("id")
+        message = callback_query.get("message", {})
+        chat_id = str(message.get("chat", {}).get("id", ""))
+        message_id = message.get("message_id")
+
+        if not callback_data.startswith("confirm_order:"):
+            if callback_query_id:
+                await answer_callback_query(callback_query_id, "Unsupported action.")
+            return {"ok": True, "message": "Unsupported callback action"}
+
+        order_id = callback_data.split(":", 1)[1]
+        if not order_id:
+            if callback_query_id:
+                await answer_callback_query(callback_query_id, "Invalid order ID.")
+            return {"ok": True, "message": "Invalid order ID"}
+
+        supabase = get_supabase()
+        lookup = supabase.table("orders").select("id,status").eq("id", order_id).execute()
+
+        if not lookup.data:
+            if callback_query_id:
+                await answer_callback_query(callback_query_id, "Order not found.")
+            return {"ok": True, "message": "Order not found"}
+
+        current_status = lookup.data[0].get("status", "pending")
+        if current_status == "confirmed":
+            if callback_query_id:
+                await answer_callback_query(callback_query_id, "Order already confirmed.")
+            return {"ok": True, "message": "Order already confirmed"}
+
+        update_result = (
+            supabase.table("orders")
+            .update({"status": "confirmed"})
+            .eq("id", order_id)
+            .execute()
+        )
+
+        if not update_result.data:
+            if callback_query_id:
+                await answer_callback_query(callback_query_id, "Failed to confirm order.")
+            return {"ok": True, "message": "Supabase update failed"}
+
+        if callback_query_id:
+            await answer_callback_query(callback_query_id, f"Order {order_id} confirmed.")
+        if chat_id and message_id:
+            await update_message_confirmation_status(chat_id, message_id, order_id)
+
+        return {"ok": True, "message": f"Order {order_id} confirmed"}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+@router.get("/telegram/webhook-info")
+async def telegram_webhook_info():
+    """Inspect Telegram webhook status for debugging callback issues."""
+    result = await get_webhook_info()
+    return result
+
+
+@router.post("/telegram/configure-webhook")
+async def telegram_configure_webhook():
+    """Configure webhook from TELEGRAM_WEBHOOK_URL env variable."""
+    result = await ensure_webhook_configured()
+    return result
 
 
 @router.get("/orders/{order_id}", response_model=CreateOrderResponse)

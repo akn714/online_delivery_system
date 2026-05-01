@@ -22,6 +22,17 @@ interface OrderResponse {
   items: OrderItem[];
 }
 
+const getStatusBadgeClass = (status: string) => {
+  const normalized = status.toLowerCase();
+  if (normalized === 'confirmed') {
+    return 'bg-green-100 text-green-800';
+  }
+  if (normalized === 'pending') {
+    return 'bg-yellow-100 text-yellow-800';
+  }
+  return 'bg-gray-100 text-gray-700';
+};
+
 export default function OrdersPage() {
   const { user } = useAuth();
   const [orders, setOrders] = useState<OrderResponse[]>([]);
@@ -79,7 +90,7 @@ export default function OrdersPage() {
                 <p className="font-semibold text-gray-900">{order.order_id}</p>
                 <p className="text-sm text-gray-600">Address: {order.address}</p>
               </div>
-              <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 capitalize">
+              <span className={`px-2 py-1 text-xs rounded-full capitalize ${getStatusBadgeClass(order.status)}`}>
                 {order.status}
               </span>
             </div>
