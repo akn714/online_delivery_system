@@ -1,2 +1,10 @@
 .env
 __pycache__
+node_modules
+.next
+frontend/.next
+frontend/node_modules
+
+# hey, i was converting the index.html to a next.js app for better management so that complex things can be added, this prompt stuck in between due to rate limiting, please complete this app
+
+# "hey bro, don't just create an index.html create a full react/next.js frontend so that if will be easier to build complex things, use next.js in my opnion"

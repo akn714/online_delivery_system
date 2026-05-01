@@ -2,13 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from routes import orders
+from routes import orders, auth
 
 load_dotenv()
 
 app = FastAPI(
-    title="Online Delivery System API",
-    description="Backend API for Online Delivery Registration System",
+    title="Rocket07 Delivery Service API",
+    description="Backend API for Rocket07 Delivery Service",
     version="1.0.0"
 )
 
@@ -22,6 +22,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router)
 app.include_router(orders.router)
 
 
@@ -29,7 +30,7 @@ app.include_router(orders.router)
 async def root():
     """Root endpoint."""
     return {
-        "message": "Online Delivery System API",
+        "message": "Rocket07 Delivery Service API",
         "version": "1.0.0",
         "docs": "/docs"
     }
