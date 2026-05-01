@@ -33,6 +33,10 @@ export default function PaymentPage() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!user) {
+      router.replace('/auth');
+      return;
+    }
 
     const rawData = sessionStorage.getItem('orderData');
     if (!rawData) {
@@ -46,11 +50,16 @@ export default function PaymentPage() {
       sessionStorage.removeItem('orderData');
       router.replace('/');
     }
-  }, [router]);
+  }, [router, user]);
 
   const totalAmount = useMemo(() => orderData?.total ?? 0, [orderData]);
 
   const handlePlaceOrder = async () => {
+    if (!user) {
+      setError('Please login first to place an order.');
+      router.push('/auth');
+      return;
+    }
     if (!orderData) return;
     if (!transactionId.trim()) {
       setError('Please enter transaction ID.');

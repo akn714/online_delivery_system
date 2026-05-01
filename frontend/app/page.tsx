@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { itemsCatalog, DELIVERY_CHARGE, HOSTEL_OPTIONS } from '@/data/items';
@@ -143,6 +143,16 @@ export default function HomePage() {
     address: '',
   });
 
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || prev.name,
+        phone: user.phone || prev.phone,
+      }));
+    }
+  }, [user]);
+
   const subtotal = Object.values(selectedItems).reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -172,6 +182,11 @@ export default function HomePage() {
   };
 
   const handleProceedToPayment = () => {
+    if (!user) {
+      alert('Please login first to place an order.');
+      router.push('/auth');
+      return;
+    }
     if (!formData.name || !formData.phone || !formData.address) {
       alert('Please fill all customer details');
       return;
@@ -321,12 +336,17 @@ export default function HomePage() {
       </div>
 
       {/* Proceed Button */}
+      {!user && (
+        <p className="text-sm text-amber-700 mb-3">
+          Login is required before proceeding to payment.
+        </p>
+      )}
       <button
         onClick={handleProceedToPayment}
         className="btn-primary"
-        disabled={loading}
+        disabled={loading || !user}
       >
-        {loading ? 'Processing...' : 'Proceed to Payment'}
+        {!user ? 'Login to Continue' : loading ? 'Processing...' : 'Proceed to Payment'}
       </button>
     </div>
   );
