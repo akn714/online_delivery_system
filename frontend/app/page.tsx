@@ -43,6 +43,7 @@ const ITEM_IMAGE_MAP: Record<string, string> = {
   'Kacha Chana': 'kacha_chana_250gm.jpg',
   'Makhana': 'makhana_100gm.jpeg',
   'Kaju (Cashew)': 'kaju_100gm.jpg',
+  'Pista (Packet)': 'fresh_ pista_packet.jpg',
   'Badam (Almond)': 'badam_100gm.jpg',
   'Practical File (Physics - 30 Pages)': 'practical_file_physics.jpg',
   'Practical File (Physics - 60 Pages)': 'practical_file_physics.jpg',
@@ -50,9 +51,11 @@ const ITEM_IMAGE_MAP: Record<string, string> = {
   'Practical File (Chemistry - 60 Pages)': 'practical_file_chemistry.jpg',
   'Practical File (General - 30 Pages)': 'practical_file_general.jpeg',
   'Practical File (General - 60 Pages)': 'practical_file_general.jpeg',
-  'Pen (Cheap)': 'pen_blue.jpg',
-  'Pen (Medium)': 'pen_blue.jpg',
-  'Pen (Good)': 'pen_blue.jpg',
+  'Drawing Book (A3 - 36 pages)': 'engineering_drawing_36page.jpg',
+  'Drawing Book (A3 - 56 pages)': 'engineering_drawing_56page.jpg',
+  'Pen (Cheap)': 'elkos_pen_4rupees.jpg',
+  'Pen (Medium)': 'elkos_pen_5rupees.jpg',
+  'Pen (Good)': 'elkos_pen_10rupees.jpg',
   'Pencil': 'natraj_pencil.png',
   'Eraser': 'eraser_apsara.jpg',
   'Sharpener': 'pencil_sharpner_plastic.jpg',
@@ -73,13 +76,13 @@ const ITEM_IMAGE_MAP: Record<string, string> = {
   'Graph Book': 'graph_book.jpg',
   'Cello Tape': 'cello_tape_small.jpeg',
   'Highlighter': 'highlighter.jpeg',
-  'Banana': 'banana.jpg',
+  'Banana': 'fresh_bannana_500gm.webp',
   'Pomegranate (Anaar)': 'pomegranate_anar_500gm.jpg',
   'Mango': 'mango_aam_500gm.jpg',
-  'Apple': 'apple.jpg',
+  'Apple': 'fresh_apple_500gm.jpg',
   'Orange (Santara)': 'orange_santara_500gm.jpg',
   'Papaya (Papita)': 'fresh_papaya_1kg.jpg',
-  'Kiwi': 'kiwi.jpg',
+  'Kiwi': 'fresh_kiwi_1piece.jpg',
   'Coconut (Nariyal)': 'nariyal_water.webp',
   'Grapes (Angoor)': 'fresh_angoor_250gm.jpg',
 };
@@ -157,7 +160,12 @@ export default function HomePage() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const total = subtotal + DELIVERY_CHARGE;
+  const LAUNCH_DATE = '2026-05-03';
+  const isLaunchDay = typeof window === 'undefined'
+    ? false
+    : new Date().toISOString().slice(0, 10) === LAUNCH_DATE;
+  const deliveryCharge = isLaunchDay ? 0 : DELIVERY_CHARGE;
+  const total = subtotal + deliveryCharge;
 
   const handleItemToggle = (category: string, itemName: string, price: number, unit: string) => {
     const key = `${category}-${itemName}`;
@@ -201,7 +209,7 @@ export default function HomePage() {
         ...formData,
         items: Object.values(selectedItems),
         subtotal,
-        deliveryCharge: DELIVERY_CHARGE,
+        deliveryCharge,
         total,
       }));
     }
@@ -326,13 +334,20 @@ export default function HomePage() {
           </div>
           <div className="flex justify-between py-2">
             <span className="text-gray-600">Delivery Charges</span>
-            <span className="font-medium">₹{DELIVERY_CHARGE}</span>
+            <span className="font-medium">₹{deliveryCharge}</span>
           </div>
           <div className="flex justify-between py-2 border-t border-gray-200 mt-2">
             <span className="font-semibold text-lg">Total</span>
             <span className="font-semibold text-lg text-primary-600">₹{total}</span>
           </div>
         </div>
+
+        {isLaunchDay && (
+          <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 text-green-900">
+            <p className="text-sm font-semibold">🎉 Delivery free for today</p>
+            <p className="text-sm text-green-800">Sunday launch offer: enjoy zero delivery charges on all orders.</p>
+          </div>
+        )}
       </div>
 
       {/* Proceed Button */}
