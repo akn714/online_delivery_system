@@ -45,6 +45,9 @@ const ITEM_IMAGE_MAP: Record<string, string> = {
   'Kaju (Cashew)': 'kaju_100gm.jpg',
   'Pista (Packet)': 'fresh_ pista_packet.jpg',
   'Badam (Almond)': 'badam_100gm.jpg',
+  'Lassi (250ml)': 'amul_lassi_250ml_tetrapack_24rupees.jpeg',
+  'Buttermilk (200ml)': 'amul_masti_spiced_buttermilk_200ml_14rupees.jpg',
+  'Buttermilk (1L)': 'amul_masti_spiced_buttermilk_1lt_65rupees.jpg',
   'Practical File (Physics - 30 Pages)': 'practical_file_physics.jpg',
   'Practical File (Physics - 60 Pages)': 'practical_file_physics.jpg',
   'Practical File (Chemistry - 30 Pages)': 'practical_file_chemistry.jpg',
@@ -163,9 +166,11 @@ export default function HomePage() {
     0
   );
   const LAUNCH_DATE = '2026-05-03';
-  const isLaunchDay = typeof window === 'undefined'
-    ? false
-    : new Date().toISOString().slice(0, 10) === LAUNCH_DATE;
+  const [isLaunchDay, setIsLaunchDay] = useState(false);
+  useEffect(() => {
+    const today = new Date().toLocaleDateString('en-CA');
+    setIsLaunchDay(today === LAUNCH_DATE);
+  }, []);
   const deliveryCharge = isLaunchDay ? 0 : DELIVERY_CHARGE;
   const total = subtotal + deliveryCharge;
 

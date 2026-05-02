@@ -25,7 +25,7 @@ export default function RootLayout({
         <AuthProvider>
           <div className="min-h-screen bg-gray-50">
             <Navbar />
-            <main className="container mx-auto px-4 py-8 max-w-4xl">
+            <main className="container mx-auto px-4 pt-2 pb-6 max-w-4xl">
               {children}
             </main>
           </div>
