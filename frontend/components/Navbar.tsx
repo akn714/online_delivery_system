@@ -31,7 +31,7 @@ export default function Navbar() {
               height={40}
               className="rounded-lg"
             />
-            <span className="font-bold text-xl text-gray-900 hidden sm:inline">
+            <span className="font-bold text-lg sm:text-xl text-gray-900">
               Rocket07
             </span>
           </Link>
