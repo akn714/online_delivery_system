@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Rocket07 Delivery Service',
   description: 'Online Delivery System for Stationary, Grocery & Fruits',
+  icons: {
+    icon: '/logo.jpg',
+  },
 };
 
 export default function RootLayout({

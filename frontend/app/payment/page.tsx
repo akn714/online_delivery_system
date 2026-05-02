@@ -109,6 +109,19 @@ export default function PaymentPage() {
         <p className="text-lg font-bold mt-3">Total Amount: ₹{totalAmount}</p>
       </div>
 
+      <div className="bg-white rounded-lg p-6 mb-6 flex flex-col items-center border-2 border-gray-200">
+        <p className="text-sm font-medium text-gray-600 mb-3">Scan QR Code to Pay:</p>
+        <img
+          src="/phonepe_qr.jpg"
+          alt="PhonePe QR Code"
+          className="w-48 h-48 rounded-lg shadow-md mb-3"
+        />
+        <p className="text-center">
+          <span className="text-xs text-gray-600">UPI ID: </span>
+          <span className="font-semibold text-primary-700">9919262161@ybl</span>
+        </p>
+      </div>
+
       <div className="mb-4">
         <label className="label">Transaction ID *</label>
         <input

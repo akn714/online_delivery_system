@@ -85,6 +85,8 @@ const ITEM_IMAGE_MAP: Record<string, string> = {
   'Kiwi': 'fresh_kiwi_1piece.jpg',
   'Coconut (Nariyal)': 'nariyal_water.webp',
   'Grapes (Angoor)': 'fresh_angoor_250gm.jpg',
+  'Eggs (30 pieces)': 'eggs_tray_30_piece_180rupees.jpg',
+  'Raw Chicken (500g)': 'raw_chicken_500gm_120rupees.jpg',
 };
 
 const buildImagePath = (fileName: string) => `/Item%20Images/${encodeURIComponent(fileName)}`;
@@ -263,7 +265,16 @@ export default function HomePage() {
       {/* Items Section */}
       {Object.entries(itemsCatalog).map(([category, items]) => (
         <div key={category} className="card">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">🛍️ {category}</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            {category === "Non-Veg" ? "🥩" : "🛍️"} {category}
+          </h2>
+          {category === "Non-Veg" && (
+            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-sm text-orange-800 font-medium">
+                📦 Delivery of non-vegetarian products will be made separately at 5:30 PM.
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {items.map((item) => {
               const key = `${category}-${item.name}`;

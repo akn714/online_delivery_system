@@ -41,6 +41,9 @@ export const itemsCatalog: ItemsCatalog = {
     { name: "Kaju (Cashew)", price: 1000, unit: "kg" },
     { name: "Badam (Almond)", price: 1000, unit: "kg" },
     { name: "Pista (Packet)", price: 350, unit: "packet" },
+    { name: "Lassi (250ml)", price: 24, unit: "tetrapack" },
+    { name: "Buttermilk (200ml)", price: 14, unit: "packet" },
+    { name: "Buttermilk (1L)", price: 65, unit: "packet" },
   ],
   Stationary: [
     { name: "Practical File (Physics - 30 Pages)", price: 30, unit: "piece" },
@@ -85,6 +88,10 @@ export const itemsCatalog: ItemsCatalog = {
     { name: "Kiwi", price: 50, unit: "piece" },
     { name: "Coconut (Nariyal)", price: 70, unit: "piece" },
     { name: "Grapes (Angoor)", price: 150, unit: "kg" },
+  ],
+  "Non-Veg": [
+    { name: "Eggs (30 pieces)", price: 180, unit: "tray" },
+    { name: "Raw Chicken (500g)", price: 120, unit: "packet" },
   ],
 };
 
