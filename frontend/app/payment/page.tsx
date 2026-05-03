@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { orderAPI } from '@/utils/api';
+import { orderAPI, configAPI } from '@/utils/api';
 import { useAuth } from '@/context/AuthContext';
 
 interface OrderItem {
@@ -30,9 +30,34 @@ export default function PaymentPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [config, setConfig] = useState({
+    deliveryCharge: 9,
+    isDeliveryClosed: false,
+  });
+  const [configLoading, setConfigLoading] = useState(true);
+
+  
+  useEffect(() => {
+    async function loadConfig() {
+      try {
+        const { data } = await configAPI.getConfig();
+        setConfig({
+          deliveryCharge: data.data.delivery_charge,
+          isDeliveryClosed: data.data.is_delivery_closed,
+        });
+      } catch (error) {
+        console.error('Failed to load config:', error);
+        // Keep default values on error
+      } finally {
+        setConfigLoading(false);
+      }
+    }
+
+    loadConfig();
+  }, []);
 
   // Check if orders are closed
-  const ORDERS_CLOSED = process.env.NEXT_PUBLIC_ORDERS_CLOSED === 'true';
+  const ORDERS_CLOSED = config.isDeliveryClosed;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { getItemsCatalog, ITEM_IMAGE_MAP, DELIVERY_CHARGE, HOSTEL_OPTIONS, ItemsCatalog } from '@/data/items';
-import { orderAPI } from '@/utils/api';
+import { getItemsCatalog, ITEM_IMAGE_MAP, HOSTEL_OPTIONS, ItemsCatalog } from '@/data/items';
+import { orderAPI, configAPI } from '@/utils/api';
 
 interface SelectedItem {
   name: string;
@@ -72,9 +72,33 @@ export default function HomePage() {
     phone: user?.phone || '',
     address: '',
   });
+  const [config, setConfig] = useState({
+    deliveryCharge: 9,
+    isDeliveryClosed: false,
+  });
+  const [configLoading, setConfigLoading] = useState(true);
+  
+  useEffect(() => {
+    async function loadConfig() {
+      try {
+        const { data } = await configAPI.getConfig();
+        setConfig({
+          deliveryCharge: data.data.delivery_charge,
+          isDeliveryClosed: data.data.is_delivery_closed,
+        });
+      } catch (error) {
+        console.error('Failed to load config:', error);
+        // Keep default values on error
+      } finally {
+        setConfigLoading(false);
+      }
+    }
+
+    loadConfig();
+  }, []);
 
   // Check if orders are closed for today
-  const ORDERS_CLOSED = process.env.NEXT_PUBLIC_ORDERS_CLOSED === 'true'; // Set to false to enable ordering again
+  const ORDERS_CLOSED = config.isDeliveryClosed;
 
   useEffect(() => {
     if (user) {
@@ -87,25 +111,25 @@ export default function HomePage() {
   }, [user]);
 
   useEffect(() => {
-  async function loadCatalog() {
-    const data = await getItemsCatalog();
-    setItemsCatalog(data);
-  }
+    async function loadCatalog() {
+      const data = await getItemsCatalog();
+      setItemsCatalog(data);
+    }
 
-  loadCatalog();
-}, []);
+    loadCatalog();
+  }, []);
 
   const subtotal = Object.values(selectedItems).reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const LAUNCH_DATE = '2026-05-03';
+  const LAUNCH_DATE = '2026-05-02';
   const [isLaunchDay, setIsLaunchDay] = useState(false);
   useEffect(() => {
     const today = new Date().toLocaleDateString('en-CA');
     setIsLaunchDay(today === LAUNCH_DATE);
   }, []);
-  const deliveryCharge = isLaunchDay ? 0 : DELIVERY_CHARGE;
+  const deliveryCharge = isLaunchDay ? 0 : config.deliveryCharge;
   const total = subtotal + deliveryCharge;
 
   const handleItemToggle = (category: string, itemName: string, price: number, unit: string) => {

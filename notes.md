@@ -1,2 +1,6 @@
 - To change delivery charges update `/backend/.env` and `/frontend/.env` (`/backend/routes/orders.py`, `/frontend/data/items.ts`)
 - To close delivery just set NEXT_PUBLIC_ORDERS_CLOSED to 'true' in `/frontend/.env`
+
+- Variables to set via bot:
+    - DELIVERY_CHARGE
+    - ORDERS_CLOSED

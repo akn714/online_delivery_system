@@ -2,7 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from routes import orders, auth, catalog
+from routes import orders, auth, catalog, config
 from connection_manager import manager
 
 load_dotenv()
@@ -26,6 +26,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(orders.router)
 app.include_router(catalog.router)
+app.include_router(config.router)
 
 
 @app.websocket("/ws/orders")

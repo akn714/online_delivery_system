@@ -49,4 +49,9 @@ export const orderAPI = {
     api.get(`/orders/${orderId}`),
 };
 
+// Config APIs
+export const configAPI = {
+  getConfig: () => api.get('/config'),
+};
+
 export default api;

@@ -26,7 +26,8 @@ load_dotenv()
 
 router = APIRouter(prefix="/api", tags=["orders"])
 
-DELIVERY_CHARGE = int(os.getenv("DELIVERY_CHARGE", 9))
+# Remove hardcoded delivery charge - will fetch from config table
+DELIVERY_CHARGE = 9
 
 def generate_otp() -> str:
     """Generate a unique 4-digit OTP."""
@@ -45,6 +46,10 @@ async def create_order(request: CreateOrderRequest, authorization: str = Header(
     Create a new order and send notification to Telegram.
     """
     supabase = get_supabase()
+    
+    # Fetch delivery charge from config
+    config_result = supabase.table("config").select("delivery_charge").eq("id", 1).execute()
+    DELIVERY_CHARGE = config_result.data[0]["delivery_charge"] if config_result.data else 15
     
     # Generate unique order ID and OTP
     order_id = generate_order_id()
