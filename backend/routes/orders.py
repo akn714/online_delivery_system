@@ -26,8 +26,7 @@ load_dotenv()
 
 router = APIRouter(prefix="/api", tags=["orders"])
 
-DELIVERY_CHARGE = int(os.getenv("DELIVERY_CHARGE", "15"))
-
+DELIVERY_CHARGE = int(os.getenv("DELIVERY_CHARGE", 9))
 
 def generate_otp() -> str:
     """Generate a unique 4-digit OTP."""

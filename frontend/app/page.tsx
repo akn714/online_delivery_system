@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { itemsCatalog, ITEM_IMAGE_MAP, DELIVERY_CHARGE, HOSTEL_OPTIONS } from '@/data/items';
+import { getItemsCatalog, ITEM_IMAGE_MAP, DELIVERY_CHARGE, HOSTEL_OPTIONS, ItemsCatalog } from '@/data/items';
 import { orderAPI } from '@/utils/api';
 
 interface SelectedItem {
@@ -64,6 +64,7 @@ function ItemImage({ itemName }: { itemName: string }) {
 export default function HomePage() {
   const router = useRouter();
   const { user } = useAuth();
+  const [itemsCatalog, setItemsCatalog] = useState<ItemsCatalog>({});
   const [selectedItems, setSelectedItems] = useState<{ [key: string]: SelectedItem }>({});
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -73,7 +74,7 @@ export default function HomePage() {
   });
 
   // Check if orders are closed for today
-  const ORDERS_CLOSED = true; // Set to false to enable ordering again
+  const ORDERS_CLOSED = process.env.NEXT_PUBLIC_ORDERS_CLOSED === 'true'; // Set to false to enable ordering again
 
   useEffect(() => {
     if (user) {
@@ -84,6 +85,15 @@ export default function HomePage() {
       }));
     }
   }, [user]);
+
+  useEffect(() => {
+  async function loadCatalog() {
+    const data = await getItemsCatalog();
+    setItemsCatalog(data);
+  }
+
+  loadCatalog();
+}, []);
 
   const subtotal = Object.values(selectedItems).reduce(
     (sum, item) => sum + item.price * item.quantity,

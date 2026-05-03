@@ -31,8 +31,8 @@ export default function PaymentPage() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Check if orders are closed for today
-  const ORDERS_CLOSED = true; // Set to false to enable ordering again
+  // Check if orders are closed
+  const ORDERS_CLOSED = process.env.NEXT_PUBLIC_ORDERS_CLOSED === 'true';
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
