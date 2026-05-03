@@ -72,6 +72,9 @@ export default function HomePage() {
     address: '',
   });
 
+  // Check if orders are closed for today
+  const ORDERS_CLOSED = true; // Set to false to enable ordering again
+
   useEffect(() => {
     if (user) {
       setFormData((prev) => ({
@@ -118,6 +121,11 @@ export default function HomePage() {
   };
 
   const handleProceedToPayment = () => {
+    if (ORDERS_CLOSED) {
+      alert('Orders for today are now closed. Thank you for your support! We\'ll be back tomorrow to serve you again.');
+      return;
+    }
+    
     if (!user) {
       alert('Please login first to place an order.');
       router.push('/auth');
@@ -293,12 +301,18 @@ export default function HomePage() {
           Login is required before proceeding to payment.
         </p>
       )}
+      {ORDERS_CLOSED && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-800 font-medium">Orders for today are now closed.</p>
+          <p className="text-red-700 text-sm">Thank you for your support! We'll be back tomorrow to serve you again.</p>
+        </div>
+      )}
       <button
         onClick={handleProceedToPayment}
         className="btn-primary"
-        disabled={loading || !user}
+        disabled={loading || !user || ORDERS_CLOSED}
       >
-        {!user ? 'Login to Continue' : loading ? 'Processing...' : 'Proceed to Payment'}
+        {!user ? 'Login to Continue' : loading ? 'Processing...' : ORDERS_CLOSED ? 'Orders Closed' : 'Proceed to Payment'}
       </button>
     </div>
   );

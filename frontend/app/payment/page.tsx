@@ -31,6 +31,9 @@ export default function PaymentPage() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Check if orders are closed for today
+  const ORDERS_CLOSED = true; // Set to false to enable ordering again
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!user) {
@@ -55,6 +58,11 @@ export default function PaymentPage() {
   const totalAmount = useMemo(() => orderData?.total ?? 0, [orderData]);
 
   const handlePlaceOrder = async () => {
+    if (ORDERS_CLOSED) {
+      setError('Orders for today are now closed. Thank you for your support! We\'ll be back tomorrow to serve you again.');
+      return;
+    }
+    
     if (!user) {
       setError('Please login first to place an order.');
       router.push('/auth');
@@ -136,6 +144,13 @@ export default function PaymentPage() {
       {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
       {successMessage && <p className="text-sm text-green-700 mb-3">{successMessage}</p>}
 
+      {ORDERS_CLOSED && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-800 font-medium">Orders for today are now closed.</p>
+          <p className="text-red-700 text-sm">Thank you for your support! We'll be back tomorrow to serve you again.</p>
+        </div>
+      )}
+
       <div className="flex gap-3">
         <button
           type="button"
@@ -145,8 +160,8 @@ export default function PaymentPage() {
         >
           Back
         </button>
-        <button type="button" onClick={handlePlaceOrder} className="btn-primary" disabled={submitting}>
-          {submitting ? 'Placing order...' : 'Place Order'}
+        <button type="button" onClick={handlePlaceOrder} className="btn-primary" disabled={submitting || ORDERS_CLOSED}>
+          {submitting ? 'Placing order...' : ORDERS_CLOSED ? 'Orders Closed' : 'Place Order'}
         </button>
       </div>
     </div>
