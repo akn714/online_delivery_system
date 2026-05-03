@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { orderAPI } from '@/utils/api';
+import { useWebSocket } from '@/hooks/useWebSocket';
 
 interface OrderItem {
   name: string;
@@ -38,6 +39,21 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const handleOrderUpdate = useCallback((update: { type: string; order_id: string; status: string }) => {
+    if (update.type === 'order_update') {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.order_id === update.order_id
+            ? { ...order, status: update.status }
+            : order
+        )
+      );
+    }
+  }, []);
+
+  // Use WebSocket hook to listen for order updates
+  useWebSocket(handleOrderUpdate);
 
   useEffect(() => {
     const fetchOrders = async () => {

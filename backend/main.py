@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from routes import orders, auth
+from connection_manager import manager
 
 load_dotenv()
 
@@ -24,6 +25,18 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router)
 app.include_router(orders.router)
+
+
+@app.websocket("/ws/orders")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time order updates."""
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection alive
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 
 @app.get("/")
