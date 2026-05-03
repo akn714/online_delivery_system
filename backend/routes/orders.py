@@ -20,6 +20,7 @@ from services.telegram import (
     update_message_confirmation_status,
 )
 from database.supabase_client import get_supabase
+from connection_manager import manager
 
 load_dotenv()
 
@@ -264,6 +265,13 @@ async def handle_telegram_callback(request: Request):
             if callback_query_id:
                 await answer_callback_query(callback_query_id, f"Failed to confirm: {error_hint}")
             return {"ok": False, "message": error_hint, "order_id": order_id}
+
+        # Broadcast order update to all connected clients
+        await manager.broadcast({
+            "type": "order_update",
+            "order_id": order_id,
+            "status": "confirmed"
+        })
 
         if callback_query_id:
             await answer_callback_query(callback_query_id, f"Order {order_id} confirmed.")
