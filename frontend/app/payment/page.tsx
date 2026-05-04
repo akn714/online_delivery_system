@@ -9,6 +9,7 @@ interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  unit?: string;
 }
 
 interface StoredOrderData {
@@ -21,12 +22,15 @@ interface StoredOrderData {
   total: number;
 }
 
+const UPI_ID = '9919262161@ybl';
+
 export default function PaymentPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [orderData, setOrderData] = useState<StoredOrderData | null>(null);
   const [transactionId, setTransactionId] = useState('');
+  const [copiedUpi, setCopiedUpi] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -36,7 +40,6 @@ export default function PaymentPage() {
   });
   const [configLoading, setConfigLoading] = useState(true);
 
-  
   useEffect(() => {
     async function loadConfig() {
       try {
@@ -47,7 +50,6 @@ export default function PaymentPage() {
         });
       } catch (error) {
         console.error('Failed to load config:', error);
-        // Keep default values on error
       } finally {
         setConfigLoading(false);
       }
@@ -56,11 +58,9 @@ export default function PaymentPage() {
     loadConfig();
   }, []);
 
-  // Check if orders are closed
-  const ORDERS_CLOSED = config.isDeliveryClosed;
-
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || authLoading) return;
+
     if (!user) {
       router.replace('/auth');
       return;
@@ -68,7 +68,7 @@ export default function PaymentPage() {
 
     const rawData = sessionStorage.getItem('orderData');
     if (!rawData) {
-      router.replace('/');
+      router.replace('/cart');
       return;
     }
 
@@ -76,24 +76,39 @@ export default function PaymentPage() {
       setOrderData(JSON.parse(rawData));
     } catch (_error) {
       sessionStorage.removeItem('orderData');
-      router.replace('/');
+      router.replace('/cart');
     }
-  }, [router, user]);
+  }, [authLoading, router, user]);
 
   const totalAmount = useMemo(() => orderData?.total ?? 0, [orderData]);
+  const ordersClosed = config.isDeliveryClosed;
+
+  const handleCopyUpi = async () => {
+    try {
+      await navigator.clipboard.writeText(UPI_ID);
+      setCopiedUpi(true);
+      window.setTimeout(() => setCopiedUpi(false), 1400);
+    } catch {
+      setError('Could not copy UPI ID. Please copy it manually.');
+    }
+  };
 
   const handlePlaceOrder = async () => {
-    if (ORDERS_CLOSED) {
-      setError('Orders for today are now closed. Thank you for your support! We\'ll be back tomorrow to serve you again.');
+    if (ordersClosed) {
+      setError('Orders for today are now closed. We will be back tomorrow.');
       return;
     }
-    
+
     if (!user) {
       setError('Please login first to place an order.');
       router.push('/auth');
       return;
     }
     if (!orderData) return;
+    if (!orderData.address.trim()) {
+      setError('Please select your hostel on the home page before placing the order.');
+      return;
+    }
     if (!transactionId.trim()) {
       setError('Please enter transaction ID.');
       return;
@@ -110,11 +125,12 @@ export default function PaymentPage() {
         address: orderData.address,
         items: orderData.items,
         transaction_id: transactionId.trim(),
-        user_id: user?.id,
+        user_id: user.id,
       });
 
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem('orderData');
+        localStorage.removeItem('delivery_cart');
       }
 
       setSuccessMessage(`Order placed! ID: ${data.order_id} | OTP: ${data.otp}`);
@@ -128,66 +144,123 @@ export default function PaymentPage() {
     }
   };
 
-  if (!orderData) {
-    return <div className="card">Loading payment details...</div>;
+  if (authLoading || !orderData) {
+    return <div className="card py-8">Loading payment details...</div>;
   }
 
   return (
-    <div className="card max-w-2xl mx-auto">
-      <h1 className="text-xl font-bold text-gray-900 mb-4">Payment</h1>
-
-      <div className="bg-gray-50 rounded-lg p-4 mb-6">
-        <p className="text-gray-700">Pay using UPI to:</p>
-        <p className="font-semibold text-primary-700 mt-1">9919262161@ybl</p>
-        <p className="text-lg font-bold mt-3">Total Amount: ₹{totalAmount}</p>
+    <div className="space-y-4 md:space-y-6">
+      <div className="card">
+        <h1 className="mb-1 text-xl font-extrabold text-[var(--text-primary)] md:mb-2 md:text-2xl">Payment</h1>
+        <p className="text-xs text-[var(--text-muted)] md:text-sm">Pay with UPI and submit the transaction ID.</p>
       </div>
 
-      <div className="bg-white rounded-lg p-6 mb-6 flex flex-col items-center border-2 border-gray-200">
-        <p className="text-sm font-medium text-gray-600 mb-3">Scan QR Code to Pay:</p>
-        <img
-          src="/phonepe_qr.jpg"
-          alt="PhonePe QR Code"
-          className="w-48 h-48 rounded-lg shadow-md mb-3"
-        />
-        <p className="text-center">
-          <span className="text-xs text-gray-600">UPI ID: </span>
-          <span className="font-semibold text-primary-700">9919262161@ybl</span>
-        </p>
-      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6">
+        <div className="space-y-4 md:space-y-5">
+          <div className="card">
+            <div className="flex flex-col items-center rounded-[10px] border border-[var(--border)] bg-white p-3 sm:p-5 md:rounded-[12px] md:p-6">
+              <p className="mb-2 text-sm font-semibold text-[var(--text-muted)] md:mb-3">Scan QR Code to Pay</p>
+              <img
+                src="/phonepe_qr.jpg"
+                alt="PhonePe QR Code"
+                className="mb-2 aspect-square w-full max-w-44 rounded-[10px] border border-[var(--border)] object-cover sm:max-w-52 md:mb-3 md:max-w-56 md:rounded-[12px]"
+              />
+              <div className="w-full max-w-sm rounded-[10px] border border-[var(--border)] bg-[var(--background)] p-2.5 md:p-3">
+                <p className="text-center text-xs font-semibold text-[var(--text-muted)]">UPI ID</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="min-w-0 flex-1 break-all text-left text-sm font-semibold text-[var(--primary-dark)] md:text-base">
+                    {UPI_ID}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyUpi}
+                    className="shrink-0 rounded-md border border-[var(--primary)] bg-white px-2.5 py-1 text-xs font-bold text-[var(--primary-dark)] transition-colors hover:bg-[var(--primary-bg)]"
+                  >
+                    {copiedUpi ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
-      <div className="mb-4">
-        <label className="label">Transaction ID *</label>
-        <input
-          type="text"
-          className="input-field"
-          value={transactionId}
-          onChange={(event) => setTransactionId(event.target.value)}
-          placeholder="Enter UPI transaction ID"
-        />
-      </div>
+          <div className="card space-y-3 md:space-y-4">
+            <div>
+              <label className="label">Transaction ID *</label>
+              <input
+                type="text"
+                className="input-field"
+                value={transactionId}
+                onChange={(event) => setTransactionId(event.target.value)}
+                placeholder="Enter UPI transaction ID"
+              />
+            </div>
 
-      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
-      {successMessage && <p className="text-sm text-green-700 mb-3">{successMessage}</p>}
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            {successMessage && <p className="text-sm text-green-700">{successMessage}</p>}
 
-      {ORDERS_CLOSED && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800 font-medium">Orders for today are now closed.</p>
-          <p className="text-red-700 text-sm">Thank you for your support! We'll be back tomorrow to serve you again.</p>
+            {ordersClosed && !configLoading && (
+              <div className="rounded-[12px] border border-red-200 bg-red-50 p-4">
+                <p className="font-medium text-red-800">Orders for today are now closed.</p>
+                <p className="text-sm text-red-700">Thank you for your support. We will be back tomorrow.</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2 pt-1 md:flex md:gap-3 md:pt-2">
+              <button
+                type="button"
+                onClick={() => router.push('/cart')}
+                className="btn-outline w-full !px-3 !py-2 text-sm md:w-auto"
+                disabled={submitting}
+              >
+                Back to Cart
+              </button>
+              <button
+                type="button"
+                onClick={handlePlaceOrder}
+                className="btn-primary w-full !px-3 !py-2 text-sm md:w-auto"
+                disabled={submitting || ordersClosed}
+              >
+                {submitting ? 'Placing order...' : ordersClosed ? 'Orders Closed' : 'Place Order'}
+              </button>
+            </div>
+          </div>
         </div>
-      )}
 
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={() => router.push('/')}
-          className="btn-secondary"
-          disabled={submitting}
-        >
-          Back
-        </button>
-        <button type="button" onClick={handlePlaceOrder} className="btn-primary" disabled={submitting || ORDERS_CLOSED}>
-          {submitting ? 'Placing order...' : ORDERS_CLOSED ? 'Orders Closed' : 'Place Order'}
-        </button>
+        <div className="card h-fit space-y-3 lg:sticky lg:top-24 md:space-y-4">
+          <h2 className="text-lg font-extrabold text-[var(--text-primary)] md:text-xl">Order Summary</h2>
+          <div className="space-y-2 md:space-y-3">
+            {orderData.items.map((item, index) => (
+              <div key={`${item.name}-${index}`} className="flex items-start justify-between gap-3 border-b border-[var(--border)] pb-2 last:border-b-0 last:pb-0 md:pb-3">
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-semibold text-[var(--text-primary)]">{item.name}</p>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    {item.quantity} x Rs. {item.price}{item.unit ? ` per ${item.unit}` : ''}
+                  </p>
+                </div>
+                <p className="whitespace-nowrap text-sm font-bold text-[var(--primary)]">Rs. {item.quantity * item.price}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="order-summary space-y-2 md:space-y-3">
+            <div className="flex justify-between gap-3 text-sm text-[var(--text-muted)]">
+              <span>Hostel</span>
+              <span className="text-right font-semibold text-[var(--text-primary)]">{orderData.address}</span>
+            </div>
+            <div className="flex justify-between text-sm text-[var(--text-muted)]">
+              <span>Subtotal</span>
+              <span>Rs. {orderData.subtotal}</span>
+            </div>
+            <div className="flex justify-between text-sm text-[var(--text-muted)]">
+              <span>Delivery Fee</span>
+              <span>Rs. {orderData.deliveryCharge ?? config.deliveryCharge}</span>
+            </div>
+            <div className="flex justify-between border-t border-[var(--border)] pt-3 text-base font-bold text-[var(--text-primary)]">
+              <span>Total</span>
+              <span className="text-[var(--primary)]">Rs. {totalAmount}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
