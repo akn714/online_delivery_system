@@ -163,7 +163,7 @@ export default function PaymentPage() {
               <img
                 src="/phonepe_qr.jpg"
                 alt="PhonePe QR Code"
-                className="mb-2 aspect-square w-full max-w-44 rounded-[10px] border border-[var(--border)] object-cover sm:max-w-52 md:mb-3 md:max-w-56 md:rounded-[12px]"
+                className="mb-2 aspect-square w-full max-w-44 rounded-[10px] border border-[var(--border)] object-contain sm:max-w-52 md:mb-3 md:max-w-56 md:rounded-[12px]"
               />
               <div className="w-full max-w-sm rounded-[10px] border border-[var(--border)] bg-[var(--background)] p-2.5 md:p-3">
                 <p className="text-center text-xs font-semibold text-[var(--text-muted)]">UPI ID</p>
